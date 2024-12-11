@@ -1,0 +1,12 @@
+#ifndef ECE253_FINAL_CONSTANTS
+#define ECE253_FINAL_CONSTANTS
+
+
+#define SCREEN_HEIGHT (480)
+#define SCREEN_WIDTH  (640)
+
+#define SCOREBOARD_HEIGHT (48)
+
+#define TWO_PI 6.28318530718f
+
+#endif
