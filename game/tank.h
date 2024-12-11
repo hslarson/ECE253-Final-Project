@@ -64,5 +64,7 @@ int  tank_check_bullet(const Tank *self, const Bullet *bullet);
 void tank_register_hit(Tank *self);
 void tank_update_steering(Tank *self, int joystick_x, int joystick_y);
 Bullet* tank_shoot(Tank *self);
+void tank_draw(Tank* self, uint16_t screen[SCREEN_HEIGHT][SCREEN_WIDTH]);
+void tank_visual_bb(const Tank *self, int *l_x, int *t_y, int *r_x, int *b_y);
 
 #endif

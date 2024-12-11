@@ -3,6 +3,7 @@
 #include "constants.h"
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <math.h>
 
 
@@ -45,9 +46,53 @@ int bullet_check_barrier(const Bullet *self, const Barrier *barrier) {
 }
 
 
-// Initiates a bullet explosion
+// Initiate a bullet explosion
 void bullet_explode(Bullet *self) {
     if (!self->explosion_ticks) {
         self->explosion_ticks = BULLET_EXPLOSION_TICKS;
     }
+}
+
+
+// Draw bullet's current location on screen
+// Erase old location beforehand to prevent artifacts
+void bullet_draw(Bullet *self, uint16_t screen[SCREEN_HEIGHT][SCREEN_WIDTH]) {
+    
+    // Rotate sprite
+    // Blit sprite
+
+    // TODO: replace w/ sprite
+    int t_y = (int)round(self->position_y) - 4;
+    int l_x = (int)round(self->position_x) - 4;
+    int b_y = (int)round(self->position_y) + 4;
+    int r_x = (int)round(self->position_x) + 4;
+
+    int start_row = max(MAP_MIN_Y, t_y);
+    int start_col = max(MAP_MIN_X, l_x);
+    int stop_row  = min(MAP_MAX_Y, b_y+1);
+    int stop_col  = min(MAP_MAX_X, r_x+1);
+    
+    // Iterate rows
+    for (int r=start_row; r<stop_row; r++) {
+        // Iterate cols
+        for (int c=start_col; c<stop_col; c++) {
+            screen[r][c] = self->explosion_ticks ? (uint16_t)0xF00F : (uint16_t)0x555F; // TODO: define
+        }
+    }
+
+    // Update last drawn location
+    self->last_x = self->position_x;
+    self->last_y = self->position_y;
+}
+
+
+// Get the bounding box of the bullet
+// as it was last drawn to the screen
+void bullet_visual_bb(const Bullet *self, int *l_x, int *t_y, int *r_x, int *b_y) {
+    
+    // Compute bullet extents
+    *l_x = (int)round(self->last_x) - BULLET_MAX_R;
+    *t_y = (int)round(self->last_y) - BULLET_MAX_R;
+    *r_x = (int)round(self->last_x) + BULLET_MAX_R;
+    *b_y = (int)round(self->last_y) + BULLET_MAX_R;
 }

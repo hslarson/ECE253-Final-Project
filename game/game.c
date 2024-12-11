@@ -1,5 +1,5 @@
 #include "game.h"
-#include "drawing.h"
+#include "screen.h"
 #include "controller.h"
 #include "tank.h"
 #include "maps.h"
@@ -55,7 +55,7 @@ int play_game() {
 
     // Initialize screen
     restore_map(MAP_MIN_X, MAP_MIN_Y, MAP_MAX_X, MAP_MAX_Y);
-    draw_scoreboard(&tank1, &tank2);
+    draw_scoreboard();
 
     // TODO: Initialize to timer_val
     uint32_t task_timestamps[3] = {0};
@@ -133,23 +133,18 @@ void t1_read_controller(int ticks) {
     tank2.gun_cooldown = max(0, tank2.gun_cooldown - ticks);
 
     // Fire new bullets
-    if (trig1) {printf("Tank 1 trig\n");}
     if (trig1 && num_bullets < MAX_BULLETS) {
-        printf("Tank 1 shoot\n");
         Bullet* b = NULL;
         b = tank_shoot(&tank1);
         if (b) {
-            printf("Bullet: (%f, %f)\n", b->position_x, b->position_y);
             bullets[num_bullets] = b;
             num_bullets++;
         }
     }
 
-    if (trig2) {printf("Tank 1 trig\n");}
     if (trig2 && num_bullets < MAX_BULLETS) {
         Bullet* b = NULL;
         b = tank_shoot(&tank2);
-        printf("Tank 2 shoot\n");
         if (b) {
             bullets[num_bullets] = b;
             num_bullets++;
@@ -193,7 +188,6 @@ void t2_move_objects(int ticks) {
 
         // Destroy bullet if it hit something
         if (bullet_hit) {
-            printf("Bullet hit\n");
             bullet_explode(bullets[i]);
         }
     }
@@ -204,13 +198,18 @@ void t2_move_objects(int ticks) {
 void t3_draw_objects(int ticks) {
 
     // Remove tanks from screen
-    remove_tank(&tank1);
-    remove_tank(&tank2);
+    int l_x, t_y, r_x, b_y;
+    tank_visual_bb(&tank1, &l_x, &t_y, &r_x, &b_y);
+    restore_map(l_x, t_y, r_x, b_y);
+    
+    tank_visual_bb(&tank2, &l_x, &t_y, &r_x, &b_y);
+    restore_map(l_x, t_y, r_x, b_y);
 
     // Iterate bullets
     for (int b=0; b<num_bullets;) {
         // Remove bullet from screen
-        remove_bullet(bullets[b]);
+        bullet_visual_bb(bullets[b], &l_x, &t_y, &r_x, &b_y);
+        restore_map(l_x, t_y, r_x, b_y);
 
         // Stop tracking bullet once it's done exploding
         if (bullets[b]->explosion_ticks) {
@@ -227,16 +226,16 @@ void t3_draw_objects(int ticks) {
     }
 
     // Re-draw tanks
-    draw_tank(&tank1);
-    draw_tank(&tank2);
+    tank_draw(&tank1, screen);
+    tank_draw(&tank2, screen);
 
     // Re-draw bullets
     for (int b=0; b<num_bullets; b++) {
-        draw_bullet(bullets[b]);
+        bullet_draw(bullets[b], screen);
     }
 
     // Update scoreboard
-    draw_scoreboard(&tank1, &tank2); 
+    draw_scoreboard(); 
 }
 
 
@@ -293,6 +292,57 @@ void tank_respawn(Tank *tank, const Tank* other) {
     // Update tank state variables
     tank->position_x = current_map.spawn_points_x[max_idx];
     tank->position_y = current_map.spawn_points_y[max_idx];
+    tank->angle = current_map.spawn_angles[max_idx];
     tank->gun_cooldown = 0;
     tank->respawn_ticks = 0;
+}
+
+
+// Restores the background and barriers within a specified region
+// TODO: Can we keep constant background frames so I can just memcpy?
+void restore_map(int l_x, int t_y, int r_x, int b_y) {
+    // Restore background color
+    int start_row = max(MAP_MIN_Y, t_y);
+    int start_col = max(MAP_MIN_X, l_x);
+    int stop_row  = min(MAP_MAX_Y, b_y+1);
+    int stop_col  = min(MAP_MAX_X, r_x+1);
+    
+    // Iterate rows
+    for (int r=start_row; r<stop_row; r++) {
+        // Iterate cols
+        for (int c=start_col; c<stop_col; c++) {
+            screen[r][c] = current_map.background_color;
+        }
+    }
+
+    // Iterate barriers to find intersections
+    int l_int, t_int, r_int, b_int;
+    for (int b=0; b<current_map.n_barriers; b++) {
+
+        t_int = max(t_y, current_map.barriers[b].t_y);
+        b_int = min(b_y, current_map.barriers[b].b_y);
+
+        l_int = max(l_x, current_map.barriers[b].l_x);
+        r_int = min(r_x, current_map.barriers[b].r_x);
+
+        if (t_int > b_int || l_int > r_int) { continue; }
+
+        start_row = max(MAP_MIN_Y, t_int);
+        start_col = max(MAP_MIN_X, l_int);
+        stop_row  = min(MAP_MAX_Y, b_int+1);
+        stop_col  = min(MAP_MAX_X, r_int+1);
+
+        // Iterate rows
+        for (int r=start_row; r<stop_row; r++) {
+            // Iterate cols
+            for (int c=start_col; c<stop_col; c++) {
+                screen[r][c] = current_map.barriers[b].color;
+            }
+        }
+    }
+}
+
+
+void draw_scoreboard() {
+    ; // TODO
 }

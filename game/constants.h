@@ -13,4 +13,7 @@
 
 #define TWO_PI 6.28318530718f
 
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+
 #endif

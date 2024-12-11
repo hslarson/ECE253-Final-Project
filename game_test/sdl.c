@@ -1,8 +1,12 @@
 #include "sdl.h"
-#include <SDL2/SDL.h>
-#include "drawing.h"
+#include "screen.h"
 #include "controller.h"
+#include "constants.h"
+
+#include <SDL2/SDL.h>
+#include <windows.h>
 #include <stdio.h>
+
 
 static SDL_Window* window = NULL;
 static SDL_Renderer* renderer = NULL;

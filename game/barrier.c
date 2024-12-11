@@ -1,6 +1,7 @@
 #include "barrier.h"
 #include <stdint.h>
 
+// Initializer
 void barrier_init(Barrier *self, int left, int top, int right, int bottom, uint16_t color) {
     self->l_x = left;
     self->t_y = top;

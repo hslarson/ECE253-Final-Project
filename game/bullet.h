@@ -5,6 +5,7 @@
 #define ECE253_FINAL_BULLET
 
 #include "barrier.h"
+#include "constants.h"
 
 // Bullet parameters
 #define BULLET_SPEED (4) // Pixels per tick
@@ -35,5 +36,7 @@ void bullet_init(Bullet *self, float x, float y, float angle);
 void bullet_move(Bullet *self, int ticks);
 int  bullet_check_barrier(const Bullet *self, const Barrier *barrier);
 void bullet_explode(Bullet *self);
+void bullet_draw(Bullet *self, uint16_t screen[SCREEN_HEIGHT][SCREEN_WIDTH]);
+void bullet_visual_bb(const Bullet *self, int *l_x, int *t_y, int *r_x, int *b_y);
 
 #endif

@@ -1,8 +1,9 @@
 #include "sdl.h"
 #include "game.h"
-#include "drawing.h"
+
 #include <SDL2/SDL.h>
 #include <windows.h> // For threading
+#include <stdio.h>
 
 // Declare a handle for the game loop thread
 static HANDLE game_thread;
