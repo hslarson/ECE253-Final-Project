@@ -7,6 +7,10 @@
 #include "barrier.h"
 #include <stdint.h>
 
+#define COORD_MIN INT16_MIN
+#define COORD_MAX INT16_MAX
+
+
 typedef struct Map {
     // Spawn points
     int n_spawn_points;
@@ -16,7 +20,6 @@ typedef struct Map {
 
     // Color palette
     uint16_t background_color;
-    uint16_t barrier_color;
     
     // Barriers
     int n_barriers;

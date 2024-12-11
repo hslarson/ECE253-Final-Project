@@ -8,7 +8,7 @@
 
 // Bullet parameters
 #define BULLET_SPEED (4) // Pixels per tick
-#define BULLET_EXPLOSION_TICKS (5) // Ticks. How many ticks the bullet explosion should last
+#define BULLET_EXPLOSION_TICKS (15) // Ticks. How many ticks the bullet explosion should last
 #define BULLET_MAX_R (5) // Pixels. Largest radius from bullet centroid to exterior of hit box
 
 

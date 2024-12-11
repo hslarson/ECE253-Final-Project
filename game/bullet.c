@@ -1,5 +1,6 @@
 #include "bullet.h"
 #include "barrier.h"
+#include "constants.h"
 
 #include <stdlib.h>
 #include <math.h>

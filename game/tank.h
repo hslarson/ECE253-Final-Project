@@ -5,12 +5,12 @@
 #include "barrier.h"
 
 #define TANK_NUM_LIVES (3) // Number of lives for each tank
-#define TANK_RESPAWN_COOLDOWN (100) // Number of ticks to wait before respawning
+#define TANK_RESPAWN_COOLDOWN (50) // Number of ticks to wait before respawning
 
 #define TANK_JOYSTICK_THRESHOLD (10) // [0,255] central dead zone of joystick.
 
 // Tank movement speed
-#define TANK_MAX_ROTATION_RATE (0.3) // Radians per pick
+#define TANK_MAX_ROTATION_RATE (0.05) // Radians per pick
 #define TANK_MAX_DRIVE_RATE (1.0f) // Pixels per tick
 
 // Tank gun parameters

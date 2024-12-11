@@ -23,11 +23,10 @@ void draw_end_menu(int winner) {
 // TODO: Can we keep constant background frames so I can just memcpy?
 void restore_map(int l_x, int t_y, int r_x, int b_y) {
     // Restore background color
-    int start_row = max(0, t_y);
-    int start_col = max(0, l_x);
-
-    int stop_row = min(SCREEN_HEIGHT, b_y+1);
-    int stop_col = min(SCREEN_WIDTH,  r_x+1);
+    int start_row = max(MAP_MIN_Y, t_y);
+    int start_col = max(MAP_MIN_X, l_x);
+    int stop_row  = min(MAP_MAX_Y, b_y+1);
+    int stop_col  = min(MAP_MAX_X, r_x+1);
     
     // Iterate rows
     for (int r=start_row; r<stop_row; r++) {
@@ -47,19 +46,18 @@ void restore_map(int l_x, int t_y, int r_x, int b_y) {
         l_int = max(l_x, current_map.barriers[b].l_x);
         r_int = min(r_x, current_map.barriers[b].r_x);
 
-        if (t_int >= b_int || l_int >= r_int) { continue; }
+        if (t_int > b_int || l_int > r_int) { continue; }
 
-        start_row = max(0, t_int);
-        start_col = max(0, l_int);
-
-        stop_row = min(SCREEN_HEIGHT, b_int+1);
-        stop_col = min(SCREEN_WIDTH,  r_int+1);
+        start_row = max(MAP_MIN_Y, t_int);
+        start_col = max(MAP_MIN_X, l_int);
+        stop_row  = min(MAP_MAX_Y, b_int+1);
+        stop_col  = min(MAP_MAX_X, r_int+1);
 
         // Iterate rows
         for (int r=start_row; r<stop_row; r++) {
             // Iterate cols
             for (int c=start_col; c<stop_col; c++) {
-                screen[r][c] = current_map.barrier_color;
+                screen[r][c] = current_map.barriers[b].color;
             }
         }
     }
@@ -145,10 +143,10 @@ void draw_tank(Tank* tank) {
     int b_y = (int)round(tank->position_y) + TANK_EXTENT_B;
     int r_x = (int)round(tank->position_x) + TANK_EXTENT_R;
 
-    int start_row = max(0, t_y);
-    int start_col = max(0, l_x);
-    int stop_row  = min(SCREEN_HEIGHT, b_y+1);
-    int stop_col  = min(SCREEN_WIDTH,  r_x+1);
+    int start_row = max(MAP_MIN_Y, t_y);
+    int start_col = max(MAP_MIN_X, l_x);
+    int stop_row  = min(MAP_MAX_Y, b_y+1);
+    int stop_col  = min(MAP_MAX_X, r_x+1);
     
     // Iterate rows
     for (int r=start_row; r<stop_row; r++) {
@@ -180,10 +178,10 @@ void draw_bullet(Bullet* bullet) {
     int b_y = (int)round(bullet->position_y) + 4;
     int r_x = (int)round(bullet->position_x) + 4;
 
-    int start_row = max(0, t_y);
-    int start_col = max(0, l_x);
-    int stop_row  = min(SCREEN_HEIGHT, b_y+1);
-    int stop_col  = min(SCREEN_WIDTH,  r_x+1);
+    int start_row = max(MAP_MIN_Y, t_y);
+    int start_col = max(MAP_MIN_X, l_x);
+    int stop_row  = min(MAP_MAX_Y, b_y+1);
+    int stop_col  = min(MAP_MAX_X, r_x+1);
 
     printf("%d, %d, %d, %d\n", start_row, start_col, stop_row, stop_col);
     
@@ -191,7 +189,7 @@ void draw_bullet(Bullet* bullet) {
     for (int r=start_row; r<stop_row; r++) {
         // Iterate cols
         for (int c=start_col; c<stop_col; c++) {
-            screen[r][c] = (uint16_t)0xF00F; // TODO: define
+            screen[r][c] = bullet->explosion_ticks ? (uint16_t)0xF00F : (uint16_t)0x555F; // TODO: define
         }
     }
 

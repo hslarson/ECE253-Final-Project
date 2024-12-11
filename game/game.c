@@ -54,7 +54,7 @@ int play_game() {
     );
 
     // Initialize screen
-    restore_map(0, SCOREBOARD_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT);
+    restore_map(MAP_MIN_X, MAP_MIN_Y, MAP_MAX_X, MAP_MAX_Y);
     draw_scoreboard(&tank1, &tank2);
 
     // TODO: Initialize to timer_val
@@ -79,16 +79,29 @@ int play_game() {
 
         // TODO: do this when tank tries to respawn but can't?
         // Check tank lives
-        if (tank1.lives <= 0 || tank2.lives <= 0) {
+        if ((tank1.lives <= 0 && tank1.respawn_ticks <= 0) || 
+            (tank2.lives <= 0 && tank2.respawn_ticks <= 0)) 
+        {
+            printf("Game over\n");
+
             // Clean up memory
             for (; num_bullets>0; num_bullets--) {
                 free(bullets[num_bullets-1]);
             }
 
             // Return winner
-            if (tank1.lives <= 0 && tank2.lives <= 0) { return 0; }
-            else if (tank1.lives <= 0) { return 2; }
-            else { return 1; }
+            if (tank1.lives <= 0 && tank2.lives <= 0) { 
+                printf("Result: Draw\n");
+                return 0; 
+            }
+            else if (tank1.lives <= 0) { 
+                printf("Result: Player 2 Wins\n");
+                return 2; 
+            }
+            else {
+                printf("Result: Player 1 Wins\n");
+                return 1; 
+            }
         }
 
         // Delete
@@ -170,12 +183,11 @@ void t2_move_objects(int ticks) {
         if (!bullet_hit) {
             if (tank_check_bullet(&tank1, bullets[i])) {
                 bullet_hit = 1;
-                tank1.lives--;
-                tank1.respawn_ticks = TANK_RESPAWN_COOLDOWN;
+                tank_register_hit(&tank1);
             }
             if (tank_check_bullet(&tank2, bullets[i])) {
                 bullet_hit = 1;
-
+                tank_register_hit(&tank2);
             }
         }
 
@@ -263,9 +275,8 @@ void tank_update_position(Tank *tank, const Tank *other, int ticks) {
 
 
 // Place the tank as far away from the other as possible
+// Does not check if the tank is out of lives
 void tank_respawn(Tank *tank, const Tank* other) {
-    // Check if respawn is allowed
-    if (tank->lives <= 0) { return; }
 
     // Find respawn point that's furthest from other tank
     // Only consider x direction for simplicity

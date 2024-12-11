@@ -9,12 +9,12 @@ const float spawn_angles_map1[] = {1.57079632679, 4.71238898038};
 
 // Define spawn points for map 1
 const Barrier barriers_map1[] = {
-    { .l_x=0, .t_y=48, .r_x=640, .b_y=58 }, // Top bar
-    { .l_x=0, .t_y=470, .r_x=640, .b_y=480 }, // Bottom bar
-    { .l_x=0, .t_y=48, .r_x=10, .b_y=480 }, // Left bar
-    { .l_x=630, .t_y=48, .r_x=640, .b_y=480 }, // Right bar
-    { .l_x=430, .t_y=164, .r_x=450, .b_y=364 }, // Left barrier
-    { .l_x=190, .t_y=164, .r_x=210, .b_y=364 }, // Right barrier
+    { .l_x=COORD_MIN, .t_y=COORD_MIN, .r_x=640, .b_y=58, .color=0x252F }, // Top bar
+    { .l_x=0, .t_y=470, .r_x=640, .b_y=COORD_MAX, .color=0x252F }, // Bottom bar
+    { .l_x=COORD_MIN, .t_y=48, .r_x=10, .b_y=480, .color=0x252F }, // Left bar
+    { .l_x=630, .t_y=48, .r_x=COORD_MAX, .b_y=480, .color=0x252F }, // Right bar
+    { .l_x=430, .t_y=164, .r_x=450, .b_y=364, .color=0x888F }, // Left barrier
+    { .l_x=190, .t_y=164, .r_x=210, .b_y=364, .color=0x888F }, // Right barrier
 };
 
 // Define map 1
@@ -24,7 +24,6 @@ const Map map1 = {
     .spawn_points_y = spawn_points_y_map1,
     .spawn_angles = spawn_angles_map1,
     .background_color = 0x384F, // RGBA (48, 128, 64, 255)
-    .barrier_color = 0x888F, // RGBA (128, 128, 128, 255)
     .n_barriers = 6,
     .barriers = barriers_map1
 };
