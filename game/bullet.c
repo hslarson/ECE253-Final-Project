@@ -74,7 +74,7 @@ void bullet_draw(Bullet *self, uint16_t screen[SCREEN_HEIGHT][SCREEN_WIDTH]) {
     int pos_y = (int)round(self->position_y);
 
     // Blit sprite
-    sprite_blit(bullet_sprite, screen, pos_x, pos_y, 0, 0);
+    sprite_blit(bullet_sprite, screen, pos_x, pos_y, 0, 0, MAP_MIN_Y);
 
     // Update last drawn bounds
     sprite_bbox(

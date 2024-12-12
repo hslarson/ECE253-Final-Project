@@ -24,7 +24,7 @@
 // };
 
 
-void sprite_blit(const Sprite *self, uint16_t screen[SCREEN_HEIGHT][SCREEN_WIDTH], int loc_x, int loc_y, bool invert_x, bool invert_y) {
+void sprite_blit(const Sprite *self, uint16_t screen[SCREEN_HEIGHT][SCREEN_WIDTH], int loc_x, int loc_y, bool invert_x, bool invert_y, int limit_t_y) {
 
     // Compute extents after inversion
     int ext_l_x = invert_x ? -self->extent_r_x : self->extent_l_x;
@@ -33,10 +33,10 @@ void sprite_blit(const Sprite *self, uint16_t screen[SCREEN_HEIGHT][SCREEN_WIDTH
     int ext_b_y = invert_y ? -self->extent_t_y : self->extent_b_y;
 
     // Get screen region
-    int l_x = max(MAP_MIN_X,   ext_l_x+loc_x);
-    int t_y = max(MAP_MIN_Y,   ext_t_y+loc_y);
-    int r_x = min(MAP_MAX_X-1, ext_r_x+loc_x);
-    int b_y = min(MAP_MAX_Y-1, ext_b_y+loc_y);
+    int l_x = max(0, ext_l_x+loc_x);
+    int t_y = max(limit_t_y, ext_t_y+loc_y);
+    int r_x = min(SCREEN_WIDTH-1, ext_r_x+loc_x);
+    int b_y = min(SCREEN_HEIGHT-1, ext_b_y+loc_y);
 
     // Pixel matrix indices
     int col_start, mat_c;

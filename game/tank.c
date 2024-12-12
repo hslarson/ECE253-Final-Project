@@ -30,6 +30,8 @@ void tank_init(Tank *self, int pos_x, int pos_y, float angle) {
     self->steer_rate = 0;
 
     self->lives = TANK_NUM_LIVES;
+    self->last_lives = 0;
+
     self->respawn_ticks = 0;
 
     self->gun_cooldown = 0;
@@ -259,7 +261,8 @@ void tank_draw(Tank* self, uint16_t screen[SCREEN_HEIGHT][SCREEN_WIDTH]) {
     sprite_blit(
         tank_sprite, screen, 
         pos_x, pos_y,
-        invert_x, invert_y
+        invert_x, invert_y,
+        MAP_MIN_Y
     );
 
     // Update last drawn bounds

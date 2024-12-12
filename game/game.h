@@ -21,6 +21,6 @@ int play_game(void);
 void tank_update_position(Tank *tank, const Tank *other, int ticks);
 void tank_respawn(Tank *tank, const Tank* other);
 void restore_map(int l_x, int t_y, int r_x, int b_y);
-void draw_scoreboard();
+void draw_scoreboard(Tank *tank, int heart_locs_x[TANK_NUM_LIVES]);
 
 #endif

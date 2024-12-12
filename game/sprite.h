@@ -21,7 +21,8 @@ void sprite_blit(
     const Sprite *self, 
     uint16_t screen[SCREEN_HEIGHT][SCREEN_WIDTH], 
     int loc_x, int loc_y, 
-    bool invert_x, bool invert_y
+    bool invert_x, bool invert_y,
+    int limit_t_y
 );
 
 void sprite_bbox(

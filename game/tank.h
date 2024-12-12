@@ -52,6 +52,7 @@ typedef struct Tank {
 
     // Tank health
     int lives; // Remaining lives
+    int last_lives; // Last number of lives
     int respawn_ticks; // Timer to delay tank respawning
 
     // Cannon cooldown

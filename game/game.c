@@ -23,6 +23,11 @@ Bullet* bullets[MAX_BULLETS];
 // Tank objects
 Tank tank1, tank2;
 
+// Scoreboard parameters
+const int tank1_heart_loc_x[TANK_NUM_LIVES] = {36, 88, 140};
+const int tank2_heart_loc_x[TANK_NUM_LIVES] = {604, 552, 500};
+const int tank_heart_loc_y = 24;
+
 // Delete
 #include <windows.h>
 
@@ -57,7 +62,8 @@ int play_game() {
 
     // Initialize screen
     restore_map(MAP_MIN_X, MAP_MIN_Y, MAP_MAX_X, MAP_MAX_Y);
-    draw_scoreboard();
+    draw_scoreboard(&tank1, tank1_heart_loc_x); 
+    draw_scoreboard(&tank2, tank2_heart_loc_x); 
 
     // TODO: Initialize to timer_val
     uint32_t task_timestamps[3] = {0};
@@ -236,7 +242,8 @@ void t3_draw_objects(int ticks) {
     }
 
     // Update scoreboard
-    draw_scoreboard(); 
+    draw_scoreboard(&tank1, tank1_heart_loc_x); 
+    draw_scoreboard(&tank2, tank2_heart_loc_x); 
 }
 
 
@@ -344,6 +351,43 @@ void restore_map(int l_x, int t_y, int r_x, int b_y) {
 }
 
 
-void draw_scoreboard() {
-    ; // TODO
+// Draw the current score
+void draw_scoreboard(Tank *tank, int heart_locs_x[TANK_NUM_LIVES]) {
+    
+// Draw tank 1 lives
+    int diff = tank->lives - tank->last_lives;
+    int loc_x;
+
+    // Lost lives
+    if (diff < 0) {
+        int l_x, t_y, r_x, b_y;
+
+        for (int i=tank->last_lives; i>tank->lives && i>=0; i--) {
+            loc_x = heart_locs_x[i-1];
+
+            // Get extents
+            sprite_bbox(heart_sprite, loc_x, tank_heart_loc_y, 0, 0, &l_x, &t_y, &r_x, &b_y);
+
+            // Restore background
+            // Warning: No bounds checking here
+            for (int r=t_y; r<=b_y; r++) {
+                // Iterate cols
+                for (int c=l_x; c<r_x; c++) {
+                    screen[r][c] = (uint16_t)(0x000F);
+                }
+            }
+        }
+    }
+    
+    // Gained lives
+    else if (diff > 0) {
+        for (int i=tank->last_lives; i<tank->lives && i<TANK_NUM_LIVES; i++) {
+            loc_x = heart_locs_x[i];
+
+            sprite_blit(heart_sprite, screen, loc_x, tank_heart_loc_y, 0, 0, 0);
+        }
+    }
+
+    // Update last drawn lives
+    tank->last_lives = tank->lives;
 }

@@ -10,7 +10,9 @@ static HANDLE game_thread;
 
 // Start the game loop in a separate thread
 DWORD WINAPI game_thread_function(LPVOID arg) {
-    play_game(); // Run the main game loop here
+    while (1) {
+        play_game(); // Run the main game loop here
+    }
     return 0;
 }
 
