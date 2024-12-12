@@ -12,6 +12,7 @@
 #define MAP_MAX_Y (SCREEN_HEIGHT) // Not inclusive
 
 #define TWO_PI 6.28318530718f
+#define PI 3.14159265359f
 
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 #define min(a,b) (((a) < (b)) ? (a) : (b))

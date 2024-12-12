@@ -1,6 +1,8 @@
 #include "tank.h"
 #include "bullet.h"
 #include "barrier.h"
+#include "sprite.h"
+#include "assets.h"
 #include "constants.h"
 
 #include <stdlib.h>
@@ -8,16 +10,21 @@
 #include <math.h>
 
 
+// #include <stdio.h>
+// printf("Angle: %f. Mapped Angle: %f, Sprite index: %d\n", self->angle*180/PI, mapped_angle*180/PI, sprite_index);
+
+
 // Initializer
 void tank_init(Tank *self, int pos_x, int pos_y, float angle) {
     self->position_x = (float)pos_x;
     self->position_y = (float)pos_y;
 
-    self->last_x = -1;
-    self->last_y = -1;
-
     self->angle = angle;
-    self->last_angle = 0;
+
+    self->bbox_l_x = 0;
+    self->bbox_t_y = 0;
+    self->bbox_r_x = 0;
+    self->bbox_b_y = 0;
 
     self->drive_rate = 0;
     self->steer_rate = 0;
@@ -221,72 +228,48 @@ Bullet* tank_shoot(Tank *self) {
 // Draw tank's current location on screen
 // Erase old location before calling to prevent artifacts
 void tank_draw(Tank* self, uint16_t screen[SCREEN_HEIGHT][SCREEN_WIDTH]) {
-    // Rotate sprite
-    // Blit sprite
-
-    // TODO: replace with sprite stuff
-    int t_y = (int)round(self->position_y) + TANK_EXTENT_T;
-    int l_x = (int)round(self->position_x) + TANK_EXTENT_L;
-    int b_y = (int)round(self->position_y) + TANK_EXTENT_B;
-    int r_x = (int)round(self->position_x) + TANK_EXTENT_R;
-
-    int start_row = max(MAP_MIN_Y, t_y);
-    int start_col = max(MAP_MIN_X, l_x);
-    int stop_row  = min(MAP_MAX_Y, b_y+1);
-    int stop_col  = min(MAP_MAX_X, r_x+1);
-    
-    // Iterate rows
-    for (int r=start_row; r<stop_row; r++) {
-        // Iterate cols
-        for (int c=start_col; c<stop_col; c++) {
-            screen[r][c] = (uint16_t)0x222F;
-        }
+    // Map orientation to [0, pi/2]
+    // Assume angle is [0, 2pi)
+    int invert_x = 0;
+    int invert_y = 0;
+    float mapped_angle = self->angle;
+    if (self->angle >= 3*PI/2) {
+        invert_x = 1;
+        mapped_angle = TWO_PI - self->angle;
+    }
+    else if (self->angle > PI) {
+        invert_x = 1;
+        invert_y = 1;
+        mapped_angle = self->angle - PI;
+    }
+    else if (self->angle > PI/2) {
+        invert_y = 1;
+        mapped_angle = PI - self->angle;
     }
 
-    // Update last drawn location
-    self->last_x = self->position_x;
-    self->last_y = self->position_y;
-    self->last_angle = self->angle;
-}
+    // Pick appropriate sprite based on angle
+    int sprite_index = (int)round((2*mapped_angle/PI)*(NUM_TANK_SPRITES-1));
+    const Sprite *tank_sprite = tank_sprites[sprite_index];
 
+    // Compute centroid in screen coordinates
+    int pos_x = (int)round(self->position_x);
+    int pos_y = (int)round(self->position_y);
 
-// Get the bounding box of the bullet
-// as it was last drawn to the screen
-void tank_visual_bb(const Tank *self, int *l_x, int *t_y, int *r_x, int *b_y) {
-    // Compute tank corners
-    // Get tank corners (rotate extents and shift)
-    float cos_theta = cos(self->last_angle);
-    float sin_theta = sin(self->last_angle);
+    // Blit sprite with necessary inversions
+    sprite_blit(
+        tank_sprite, screen, 
+        pos_x, pos_y,
+        invert_x, invert_y
+    );
 
-    int top_extent = min(TANK_EXTENT_T, -TANK_CANNON_LENGTH); // Max negative y extent
-    float tl_x = TANK_EXTENT_L*cos_theta - top_extent*sin_theta + self->last_x;
-    float tl_y = TANK_EXTENT_L*sin_theta + top_extent*cos_theta + self->last_y;
-
-    float tr_x = TANK_EXTENT_R*cos_theta - top_extent*sin_theta + self->last_x;
-    float tr_y = TANK_EXTENT_R*sin_theta + top_extent*cos_theta + self->last_y;
-
-    float bl_x = TANK_EXTENT_L*cos_theta - TANK_EXTENT_B*sin_theta + self->last_x;
-    float bl_y = TANK_EXTENT_L*sin_theta + TANK_EXTENT_B*cos_theta + self->last_y;
-
-    float br_x = TANK_EXTENT_R*cos_theta - TANK_EXTENT_B*sin_theta + self->last_x;
-    float br_y = TANK_EXTENT_R*sin_theta + TANK_EXTENT_B*cos_theta + self->last_y;
-
-    // Matrixify
-    int t_corner_x[3] = {round(tr_x), round(bl_x), round(br_x)};
-    int t_corner_y[3] = {round(tr_y), round(bl_y), round(br_y)};
-
-    // Find min/max x and y values
-    *l_x = tl_x;
-    *r_x = tl_x;
-    for (int i=0; i<3; i++) {
-        if (t_corner_x[i] < *l_x) { *l_x = t_corner_x[i]; }
-        else if (t_corner_x[i] > *r_x) { *r_x = t_corner_x[i]; }
-    }
-
-    *t_y = tl_y;
-    *b_y = tl_y;
-    for (int i=0; i<3; i++) {
-        if (t_corner_y[i] < *t_y) { *t_y = t_corner_y[i]; }
-        else if (t_corner_y[i] > *b_y) { *b_y = t_corner_y[i]; }
-    }
+    // Update last drawn bounds
+    sprite_bbox(
+        tank_sprite, 
+        pos_x, pos_y, 
+        invert_x, invert_y, 
+        &(self->bbox_l_x),
+        &(self->bbox_t_y),
+        &(self->bbox_r_x),
+        &(self->bbox_b_y)
+    );
 }

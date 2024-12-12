@@ -30,10 +30,11 @@ const Map map1 = {
 
 
 // Compile maps into list
-const Map map_list[NUM_MAPS] = { map1 };
+const Map *map_list[NUM_MAPS] = { &map1 };
 
 // Define current map
-Map current_map = map1;
+const Map *current_map = &map1;
+
 
 // Set the current map
 void map_select(int map_idx) {

@@ -1,6 +1,8 @@
 #include "bullet.h"
 #include "barrier.h"
 #include "constants.h"
+#include "sprite.h"
+#include "assets.h"
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -11,10 +13,15 @@
 void bullet_init(Bullet *self, float x, float y, float angle) {
     self->position_x = x;
     self->position_y = y;
-    self->last_x = -1;
-    self->last_y = -1;
+
     self->delta_x = BULLET_SPEED*sin(angle);
     self->delta_y = -BULLET_SPEED*cos(angle); // Invert y
+
+    self->bbox_l_x = 0;
+    self->bbox_t_y = 0;
+    self->bbox_r_x = 0;
+    self->bbox_b_y = 0;
+    
     self->explosion_ticks = 0;
 }
 
@@ -58,41 +65,24 @@ void bullet_explode(Bullet *self) {
 // Erase old location beforehand to prevent artifacts
 void bullet_draw(Bullet *self, uint16_t screen[SCREEN_HEIGHT][SCREEN_WIDTH]) {
     
-    // Rotate sprite
+    // Pick appropriate sprite based on explosion state
+    int sprite_index = (int)(self->explosion_ticks != 0);
+    const Sprite *bullet_sprite = bullet_sprites[sprite_index];
+
+    // Compute centroid in screen coordinates
+    int pos_x = (int)round(self->position_x);
+    int pos_y = (int)round(self->position_y);
+
     // Blit sprite
+    sprite_blit(bullet_sprite, screen, pos_x, pos_y, 0, 0);
 
-    // TODO: replace w/ sprite
-    int t_y = (int)round(self->position_y) - 4;
-    int l_x = (int)round(self->position_x) - 4;
-    int b_y = (int)round(self->position_y) + 4;
-    int r_x = (int)round(self->position_x) + 4;
-
-    int start_row = max(MAP_MIN_Y, t_y);
-    int start_col = max(MAP_MIN_X, l_x);
-    int stop_row  = min(MAP_MAX_Y, b_y+1);
-    int stop_col  = min(MAP_MAX_X, r_x+1);
-    
-    // Iterate rows
-    for (int r=start_row; r<stop_row; r++) {
-        // Iterate cols
-        for (int c=start_col; c<stop_col; c++) {
-            screen[r][c] = self->explosion_ticks ? (uint16_t)0xF00F : (uint16_t)0x555F; // TODO: define
-        }
-    }
-
-    // Update last drawn location
-    self->last_x = self->position_x;
-    self->last_y = self->position_y;
-}
-
-
-// Get the bounding box of the bullet
-// as it was last drawn to the screen
-void bullet_visual_bb(const Bullet *self, int *l_x, int *t_y, int *r_x, int *b_y) {
-    
-    // Compute bullet extents
-    *l_x = (int)round(self->last_x) - BULLET_MAX_R;
-    *t_y = (int)round(self->last_y) - BULLET_MAX_R;
-    *r_x = (int)round(self->last_x) + BULLET_MAX_R;
-    *b_y = (int)round(self->last_y) + BULLET_MAX_R;
+    // Update last drawn bounds
+    sprite_bbox(
+        bullet_sprite, 
+        pos_x, pos_y, 0, 0, 
+        &(self->bbox_l_x),
+        &(self->bbox_t_y),
+        &(self->bbox_r_x),
+        &(self->bbox_b_y)
+    );
 }

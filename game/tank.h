@@ -30,19 +30,21 @@
 
 
 typedef struct Tank {
-    // Current position
+    // Current position (pixels)
     float position_x;
     float position_y;
-
-    // Last position
-    float last_x;
-    float last_y;
 
     // Orientation
     // 0    --> pointed towards screen top
     // pi/2 --> pointed towards screen right
     float angle;
-    float last_angle;
+
+    // Bounds of tank sprite
+    // as it was last drawn to the screen
+    int bbox_l_x;
+    int bbox_t_y;
+    int bbox_r_x;
+    int bbox_b_y;
 
     // Movement direction
     float drive_rate; // Pixels per second. Positive is up on screen
@@ -65,6 +67,5 @@ void tank_register_hit(Tank *self);
 void tank_update_steering(Tank *self, int joystick_x, int joystick_y);
 Bullet* tank_shoot(Tank *self);
 void tank_draw(Tank* self, uint16_t screen[SCREEN_HEIGHT][SCREEN_WIDTH]);
-void tank_visual_bb(const Tank *self, int *l_x, int *t_y, int *r_x, int *b_y);
 
 #endif

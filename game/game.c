@@ -6,6 +6,8 @@
 #include "barrier.h"
 #include "bullet.h"
 #include "constants.h"
+#include "sprite.h"
+#include "assets.h"
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -41,16 +43,16 @@ int play_game() {
     // Initialize tanks
     tank_init(
         &tank1, 
-        current_map.spawn_points_x[0],
-        current_map.spawn_points_y[0],
-        current_map.spawn_angles[0]
+        current_map->spawn_points_x[0],
+        current_map->spawn_points_y[0],
+        current_map->spawn_angles[0]
     );
 
     tank_init(
         &tank2,
-        current_map.spawn_points_x[1],
-        current_map.spawn_points_y[1],
-        current_map.spawn_angles[1]
+        current_map->spawn_points_x[1],
+        current_map->spawn_points_y[1],
+        current_map->spawn_angles[1]
     );
 
     // Initialize screen
@@ -77,7 +79,6 @@ int play_game() {
             case 2: t3_draw_objects(ticks); break;
         }
 
-        // TODO: do this when tank tries to respawn but can't?
         // Check tank lives
         if ((tank1.lives <= 0 && tank1.respawn_ticks <= 0) || 
             (tank2.lives <= 0 && tank2.respawn_ticks <= 0)) 
@@ -168,8 +169,8 @@ void t2_move_objects(int ticks) {
 
         // Check bullet collisions with barrier
         bullet_hit = 0;
-        for (int n=0; !bullet_hit && n<current_map.n_barriers; n++) {
-            bullet_hit = bullet_check_barrier(bullets[i], &current_map.barriers[n]);
+        for (int n=0; !bullet_hit && n<current_map->n_barriers; n++) {
+            bullet_hit = bullet_check_barrier(bullets[i], &current_map->barriers[n]);
         }
 
         // Check bullet collisions with tank
@@ -198,18 +199,18 @@ void t2_move_objects(int ticks) {
 void t3_draw_objects(int ticks) {
 
     // Remove tanks from screen
-    int l_x, t_y, r_x, b_y;
-    tank_visual_bb(&tank1, &l_x, &t_y, &r_x, &b_y);
-    restore_map(l_x, t_y, r_x, b_y);
-    
-    tank_visual_bb(&tank2, &l_x, &t_y, &r_x, &b_y);
-    restore_map(l_x, t_y, r_x, b_y);
+    restore_map(tank1.bbox_l_x, tank1.bbox_t_y, tank1.bbox_r_x, tank1.bbox_b_y);
+    restore_map(tank2.bbox_l_x, tank2.bbox_t_y, tank2.bbox_r_x, tank2.bbox_b_y);
 
     // Iterate bullets
     for (int b=0; b<num_bullets;) {
         // Remove bullet from screen
-        bullet_visual_bb(bullets[b], &l_x, &t_y, &r_x, &b_y);
-        restore_map(l_x, t_y, r_x, b_y);
+        restore_map(
+            bullets[b]->bbox_l_x, 
+            bullets[b]->bbox_t_y, 
+            bullets[b]->bbox_r_x, 
+            bullets[b]->bbox_b_y
+        );
 
         // Stop tracking bullet once it's done exploding
         if (bullets[b]->explosion_ticks) {
@@ -262,8 +263,8 @@ void tank_update_position(Tank *tank, const Tank *other, int ticks) {
 
     // Check for tank collisions with barrier
     // Revert movement if a collision is detected
-    for (int i=0; i<current_map.n_barriers; i++) {
-        if (tank_check_barrier(tank, &current_map.barriers[i])) {
+    for (int i=0; i<current_map->n_barriers; i++) {
+        if (tank_check_barrier(tank, &current_map->barriers[i])) {
             tank->position_x = pos_x;
             tank->position_y = pos_y;
             tank->angle = angle;
@@ -281,8 +282,8 @@ void tank_respawn(Tank *tank, const Tank* other) {
     // Only consider x direction for simplicity
     int diff, max_diff = 0;
     int max_idx = 0;
-    for (int i=0; i<current_map.n_spawn_points; i++) {
-        diff = abs((int)other->position_x - current_map.spawn_points_x[i]);
+    for (int i=0; i<current_map->n_spawn_points; i++) {
+        diff = abs((int)other->position_x - current_map->spawn_points_x[i]);
         if (diff > max_diff) {
             max_diff = diff;
             max_idx = i;
@@ -290,9 +291,9 @@ void tank_respawn(Tank *tank, const Tank* other) {
     }
 
     // Update tank state variables
-    tank->position_x = current_map.spawn_points_x[max_idx];
-    tank->position_y = current_map.spawn_points_y[max_idx];
-    tank->angle = current_map.spawn_angles[max_idx];
+    tank->position_x = current_map->spawn_points_x[max_idx];
+    tank->position_y = current_map->spawn_points_y[max_idx];
+    tank->angle = current_map->spawn_angles[max_idx];
     tank->gun_cooldown = 0;
     tank->respawn_ticks = 0;
 }
@@ -311,19 +312,19 @@ void restore_map(int l_x, int t_y, int r_x, int b_y) {
     for (int r=start_row; r<stop_row; r++) {
         // Iterate cols
         for (int c=start_col; c<stop_col; c++) {
-            screen[r][c] = current_map.background_color;
+            screen[r][c] = current_map->background_color;
         }
     }
 
     // Iterate barriers to find intersections
     int l_int, t_int, r_int, b_int;
-    for (int b=0; b<current_map.n_barriers; b++) {
+    for (int b=0; b<current_map->n_barriers; b++) {
 
-        t_int = max(t_y, current_map.barriers[b].t_y);
-        b_int = min(b_y, current_map.barriers[b].b_y);
+        t_int = max(t_y, current_map->barriers[b].t_y);
+        b_int = min(b_y, current_map->barriers[b].b_y);
 
-        l_int = max(l_x, current_map.barriers[b].l_x);
-        r_int = min(r_x, current_map.barriers[b].r_x);
+        l_int = max(l_x, current_map->barriers[b].l_x);
+        r_int = min(r_x, current_map->barriers[b].r_x);
 
         if (t_int > b_int || l_int > r_int) { continue; }
 
@@ -336,7 +337,7 @@ void restore_map(int l_x, int t_y, int r_x, int b_y) {
         for (int r=start_row; r<stop_row; r++) {
             // Iterate cols
             for (int c=start_col; c<stop_col; c++) {
-                screen[r][c] = current_map.barriers[b].color;
+                screen[r][c] = current_map->barriers[b].color;
             }
         }
     }

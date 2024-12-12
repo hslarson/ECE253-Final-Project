@@ -27,7 +27,7 @@ typedef struct Map {
 } Map;
 
 #define NUM_MAPS 1
-extern Map current_map;
+extern const Map *current_map;
 
 void map_select(int map_idx);
 
